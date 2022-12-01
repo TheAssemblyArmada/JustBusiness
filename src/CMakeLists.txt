@@ -1,6 +1,4 @@
-add_executable(justbusiness)
-
-target_sources(justbusiness PRIVATE
+set(BUSINESS_SRC
     about.cpp
     about.h
     addplyr.cpp
@@ -19,8 +17,6 @@ target_sources(justbusiness PRIVATE
     buybldg.h
     buyprop.cpp
     buyprop.h
-    c0ntw.asm
-    c0ntw.h
     cards.cpp
     cards.h
     cleanup.cpp
@@ -91,8 +87,6 @@ target_sources(justbusiness PRIVATE
     loadsave.h
     luxtax.cpp
     luxtax.h
-    main.cpp
-    main.h
     mcgaprim/buffer.cpp
     mcgaprim/buffer.h
     mcgaprim/fillrect.asm
@@ -191,8 +185,8 @@ target_sources(justbusiness PRIVATE
     startup.h
     status.cpp
     status.h
-    strings.cpp
-    strings.h
+    stringsjb.cpp
+    stringsjb.h
     talk.cpp
     talk.h
     tempcode.cpp
@@ -244,3 +238,50 @@ target_sources(justbusiness PRIVATE
     wsa/wsa.cpp
     wsa/wsa.h
 )
+
+if(BUILD_STANDALONE)
+    if(WINDOWS)
+        include(ProductVersion)
+        # Generate windows version info.
+        generate_product_version(
+            JBSTD_RC
+            NAME "Business board game simulation"
+            BUNDLE "Just Business"
+            VERSION_MAJOR 1
+            VERSION_MINOR 0
+            COMPANY_NAME "Assembly Armarda"
+            COMPANY_COPYRIGHT "Built from code released under GPLv3"
+            ORIGINAL_FILENAME "justbusiness.exe"
+            RCFILE_PREFIX "jbstd"
+        )
+    endif()
+
+    add_executable(justbusiness main.cpp main.h ${BUSINESS_SRC} ${JBSTD_RC})
+    target_link_libraries(justbusiness PRIVATE wing32)
+endif()
+
+if(BUILD_DLL)
+    if(WINDOWS)
+        include(ProductVersion)
+        # Generate windows version info.
+        generate_product_version(
+            JBDLL_RC
+            NAME "Business Board Game Simulation"
+            BUNDLE "Just Business"
+            VERSION_MAJOR 1
+            VERSION_MINOR 0
+            COMPANY_NAME "Assembly Armarda"
+            COMPANY_COPYRIGHT "Built from code released under GPLv3"
+            ORIGINAL_FILENAME "justbusiness.dll"
+            RCFILE_PREFIX "jbdll"
+        )
+    endif()
+
+    add_library(justbusiness_dll SHARED dll/dllmain.cpp dll/hookglobals.cpp ${BUSINESS_SRC} ${JBDLL_RC})
+    target_compile_definitions(justbusiness_dll PRIVATE DLL_BUILD)
+    target_link_libraries(justbusiness_dll PRIVATE wing32)
+    set_target_properties(justbusiness_dll PROPERTIES OUTPUT_NAME justbusiness PDB_NAME justbusinessdll)
+    target_exports(justbusiness_dll SYMBOLS 
+        Setup_Hooks
+    )
+endif()

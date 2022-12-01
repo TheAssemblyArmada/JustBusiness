@@ -26,12 +26,31 @@ project(business VERSION 1.0.0 LANGUAGES C CXX)
 find_package(ClangFormat)
 include(ClangFormat)
 
+if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
+    set(WINDOWS TRUE)
+endif()
+
 # Set where the build results will end up
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+if(WINDOWS AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+    option(BUILD_STANDALONE "Build the standalone binary." ON)
+    option(BUILD_DLL "Build the injection dll." ON)
+
+    add_feature_info(DllBuild BUILD_DLL "Injectable dlls")
+else()
+    set(STANDALONE TRUE)
+endif()
+
+add_feature_info(Standalone BUILD_STANDALONE "Standalone binary generation")
+
+add_subdirectory(deps/compat)
 add_subdirectory(deps/wing)
 
 # Build the game exe.
 add_subdirectory(src)
+
+feature_summary(WHAT ENABLED_FEATURES DESCRIPTION "Enabled features:")
+feature_summary(WHAT DISABLED_FEATURES DESCRIPTION "Disabled features:")
